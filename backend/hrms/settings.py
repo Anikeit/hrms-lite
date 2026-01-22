@@ -153,7 +153,15 @@ CORS_ALLOWED_ORIGINS = [
 # Add frontend URL from environment variable for production
 FRONTEND_URL = os.environ.get('FRONTEND_URL', '')
 if FRONTEND_URL:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+    # Remove trailing slash and any path components
+    # CORS origins should only contain scheme://domain:port
+    frontend_origin = FRONTEND_URL.rstrip('/')
+    # Extract just the origin (scheme + domain + port, no path)
+    from urllib.parse import urlparse
+    parsed = urlparse(frontend_origin)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    if origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(origin)
 
 CORS_ALLOW_CREDENTIALS = True
 
